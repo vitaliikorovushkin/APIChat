@@ -1,0 +1,121 @@
+﻿@model ChatClientMvc.Models.ChatViewModel
+@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-lg-12">
+            <div class="card chat-app">
+                <div id="plist" class="people-list">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Search...">
+                    </div>
+                    <ul class="list-unstyled chat-list mt-2 mb-0">
+                        <li onclick="hightlightSelectedItem(this)" value="All">All</li>
+                        @if (Model != null || Model.Users != null)
+                        {
+                            @foreach (var item in Model.Users)
+                            {
+                                if (@item.Name != @HttpContextAccessor.HttpContext.Session.GetString("CurrentUser"))
+                                {
+                                    <li class="clearfix"  onclick="hightlightSelectedItem(this)">
+                                        <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar">
+                                        <div class="about">
+                                            <div class="name">@item.Name</div>
+                                            <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                        </div>
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                </div>
+                <div class="chat">
+                    <div class="chat-header clearfix">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                    <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
+                                </a>
+                                <div class="chat-about">
+                                    <h6 class="m-b-0">@HttpContextAccessor.HttpContext.Session.GetString("CurrentUser")</h6>
+                                    <small>when i come to chat</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 hidden-sm text-right">
+                                @*<a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>*@
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-history">
+                        <ul class="m-b-0">
+
+                            @if (Model != null && Model.Messages != null)
+                            {
+                                @foreach (var item in Model.Messages)
+                                {
+                                    if (item.From == HttpContextAccessor.HttpContext.Session.GetString("CurrentUser"))
+                                    {
+                                        <li class="clearfix">
+                                            <div class="message-data">
+                                                <span class="message-data-time">@item.CreatedAt.ToString()</span>
+                                            </div>
+                                            <div class="message my-message">@item.MessageText</div>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="clearfix">
+                                            <div class="message-data text-right">
+                                                <span class="message-data-time"> @item.CreatedAt.ToString()</span>
+                                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+                                            </div>
+                                            <div class="message other-message float-right"> @item.MessageText </div>
+                                        </li>
+                                    }
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <form class="chat-message clearfix" asp-action="Send" method="post" asp-controller="Chat">
+                        <div class="input-group mb-0">
+                            <div class="input-group-prepend">
+                                <input type="submit" class="fa fa-send input-group-text" value="Send Message">
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" name="From" id="From" value="" />
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" name="To" id="To" value="All" />
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" name="IsRead" value="" />
+                            </div>
+                            <input type="text" class="form-control" name="MessageText" placeholder="Enter text here...">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function hightlightSelectedItem(el) {
+        Array.prototype.slice.call(document.querySelectorAll('ul[data-tag="chatters"] li')).
+            forEach(function (item) { item.classList.remove('lisel'); });
+        el.classList.add('lisel');
+        document.getElementById('To').value = el.innerText
+    }
+</script>
